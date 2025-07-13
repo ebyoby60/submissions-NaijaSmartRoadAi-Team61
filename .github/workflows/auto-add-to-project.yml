@@ -2,14 +2,14 @@ name: Auto Add PRs to Project Board
 
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, synchronize]
 
 jobs:
   add_to_project:
     runs-on: ubuntu-latest
     steps:
       - name: Add PR to GitHub Project
-        uses: peter-evans/add-to-project@v0.5.0
+        uses: peter-evans/add-to-project@v0.4.0
         with:
           project-url: https://github.com/orgs/HackathonNiger/projects/1
           github-token: ${{ secrets.PROJECT_PAT }}
