@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NaijaSmartRoad AI</title>
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    body {
+      background: url("{{ url_for('static', filename='logo.png') }}") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      color: #fff;
+    }
+
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.7);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 3rem;
+      margin-bottom: 15px;
+    }
+
+    p.lead {
+      font-size: 1.2rem;
+      max-width: 700px;
+      margin: 0 auto 25px;
+      line-height: 1.6;
+    }
+
+    .btn-main {
+      background-color: #007bff;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      color: white;
+      margin: 10px;
+      transition: background 0.3s ease;
+    }
+    .btn-main:hover {
+      background-color: #0056b3;
+    }
+
+    .nav-buttons {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+    }
+    .nav-buttons a {
+      color: #fff;
+      margin: 0 12px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .nav-buttons a:hover {
+      text-decoration: underline;
+    }
+
+    .nav-buttons i {
+      margin-right: 6px;
+      color: #00bfff;
+    }
+
+    /* Chatbot */
+    #chatbot {
+      position: fixed;
+      bottom: 20px;
+      right: 25px;
+      background: #fff;
+      border-radius: 15px;
+      width: 320px;
+      height: 420px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 999;
+    }
+
+    #chatbot-header {
+      background-color: #007bff;
+      color: white;
+      padding: 10px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #chatbot-body {
+      flex: 1;
+      background: #f8f9fa;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+      color: #000; /* default text color */
+    }
+
+    #chatbot-body p {
+      margin: 8px 0;
+    }
+
+    #chatbot-body strong {
+      color: #007bff; /* bright blue for "Bot:" and "You:" labels */
+    }
+
+
+    #chatbot-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+
+    #chatbot-input input {
+      flex: 1;
+      border: none;
+      padding: 10px;
+      outline: none;
+    }
+
+    #chatbot-input button {
+      background: #007bff;
+      color: blue;
+      border: none;
+      padding: 10px 15px;
+    }
+
+    #chatbot-toggle {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 1.7rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      cursor: pointer;
+      z-index: 998;
+    }
+
+    #chatbot-toggle:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navigation buttons with icons -->
+  <div class="nav-buttons">
+    <a href="{{ url_for('help') }}"><i class="fa-solid fa-circle-question"></i>Help</a>
+    <a href="{{ url_for('contact') }}"><i class="fa-solid fa-envelope"></i> Contact</a>
+    <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-gauge"></i>Dashboard</a>
+  </div>
+
+  <!-- Main overlay content -->
+  <div class="overlay">
+    <h1>Welcome to NaijaSmartRoad AI</h1>
+    <p class="lead">
+      <strong>NaijaSmartRoad AI</strong> is an intelligent traffic management system designed for Nigerian cities.  
+      We use artificial intelligence to predict congestion, recommend optimal routes, and support emergency response routing.
+    </p>
+
+    <a href="{{ url_for('dashboard') }}" class="btn-main">
+      <i class="fa-solid fa-rocket"></i> Learn More
+    </a>
+  </div>
+
+  <!-- Chatbot -->
+  <div id="chatbot">
+    <div id="chatbot-header">
+      <span><i class="fa-solid fa-robot"></i> NaijaSmartBot</span>
+      <button id="close-chat" style="background:none;border:none;color:white;">✖</button>
+    </div>
+    <div id="chatbot-body">
+      <p><strong>Bot:</strong> Hi I’m NaijaSmartBot — your AI assistant! Ask me about traffic, routes, or help.</p>
+    </div>
+    <div id="chatbot-input">
+      <input type="text" id="user-input" placeholder="Type your message...">
+      <button id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <button id="chatbot-toggle"><i class="fa-solid fa-comments"></i></button>
+
+  <script>
+
+document.addEventListener("DOMContentLoaded", () => {
+  const chatbot = document.getElementById('chatbot');
+  const toggle = document.getElementById('chatbot-toggle');
+  const closeBtn = document.getElementById('close-chat');
+  const body = document.getElementById('chatbot-body');
+  const input = document.getElementById('user-input');
+  const sendBtn = document.getElementById('send-btn');
+
+  toggle.addEventListener('click', () => chatbot.style.display = 'flex');
+  closeBtn.addEventListener('click', () => chatbot.style.display = 'none');
+
+  function addUserMessage(msg) {
+    body.innerHTML += `<p><strong>You:</strong> ${msg}</p>`;
+    body.scrollTop = body.scrollHeight;
+  }
+  function addBotMessage(msg) {
+    body.innerHTML += `<p><strong>Bot:</strong> ${msg}</p>`;
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function getBotReply(message) {
+    const msg = message.toLowerCase();
+    if (msg.includes("traffic")) return "Traffic looks moderate in most areas";
+    if (msg.includes("hello")) return "Hello! How can I help you today?";
+    if (msg.includes("help")) return "Click the Help icon at the top for more info.";
+    if (msg.includes("contact")) return "You can reach us via the Contact button above";
+    if (msg.includes("dashboard")) return "Open the Dashboard for real-time stats";
+    return "I'm still learning — please check the Dashboard for full info!";
+  }
+
+  function handleMessage() {
+    const message = input.value.trim();
+    if (message === "") return;
+    addUserMessage(message);
+    input.value = "";
+    setTimeout(() => addBotMessage(getBotReply(message)), 600);
+  }
+
+  sendBtn.addEventListener("click", handleMessage);
+  input.addEventListener("keypress", e => { if (e.key === "Enter") handleMessage(); });
+});
+
+  </script>
+</body>
+</html>

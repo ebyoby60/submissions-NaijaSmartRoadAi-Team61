@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NaijaSmartRoad AI - Help</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    body {
+      background: url("{{ url_for('static', filename='help.png') }}") no-repeat center center fixed;
+      background-size: 98%;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      color: #fff;
+    }
+
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.78);
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    h1, h4 {
+      text-align: center;
+      color: #00bfff;
+    }
+
+    .help-section {
+      background: rgba(255, 255, 255, 0.9);
+      color: #000;
+      border-radius: 20px;
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 30px;
+      box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .help-item {
+      display: flex;
+      align-items: start;
+      margin-bottom: 20px;
+    }
+
+    .help-item i {
+      font-size: 1.8rem;
+      color: #007bff;
+      margin-right: 15px;
+      margin-top: 5px;
+    }
+
+    .nav-buttons {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+
+    .nav-buttons a {
+      color: #fff;
+      margin: 0 12px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .nav-buttons a:hover {
+      text-decoration: underline;
+    }
+
+    /* Chatbot Styles */
+    #chatbot {
+      position: fixed;
+      bottom: 20px;
+      right: 25px;
+      background: #fff;
+      border-radius: 15px;
+      width: 320px;
+      height: 420px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 999;
+    }
+
+    #chatbot-header {
+      background-color: #007bff;
+      color: white;
+      padding: 10px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #chatbot-body {
+      flex: 1;
+      background: #f8f9fa;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+      color: #000;
+    }
+
+    #chatbot-body strong { color: #007bff; }
+
+    #chatbot-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+
+    #chatbot-input input {
+      flex: 1;
+      border: none;
+      padding: 10px;
+      outline: none;
+    }
+
+    #chatbot-input button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+    }
+
+    #chatbot-toggle {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 1.7rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      cursor: pointer;
+      z-index: 998;
+    }
+
+    #chatbot-toggle:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navigation -->
+  <div class="nav-buttons">
+    <a href="{{ url_for('home') }}"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="{{ url_for('dashboard') }}"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+  </div>
+
+  <!-- Help Overlay -->
+  <div class="overlay">
+    <h1><i class="fa-solid fa-circle-question"></i> Help Center</h1>
+    <div class="help-section">
+      <h4>Getting Started with NaijaSmartRoad AI</h4>
+      <div class="help-item">
+        <i class="fa-solid fa-road"></i>
+        <div>
+          <h5>What is NaijaSmartRoad AI?</h5>
+          <p>NaijaSmartRoad AI is an intelligent web app designed to predict and manage traffic congestion across Nigerian cities using artificial intelligence.</p>
+        </div>
+      </div>
+
+      <div class="help-item">
+        <i class="fa-solid fa-gauge-high"></i>
+        <div>
+          <h5>How does the Dashboard work?</h5>
+          <p>It displays congestion predictions, CO₂ emissions, and fuel cost estimates in real-time. You can also simulate different routes and times.</p>
+        </div>
+      </div>
+
+      <div class="help-item">
+        <i class="fa-solid fa-comments"></i>
+        <div>
+          <h5>How to use the Chatbot Assistant?</h5>
+          <p>Click the 💬 button at the bottom right to chat with NaijaSmartBot. You can ask about “traffic,” “help,” or “dashboard.”</p>
+        </div>
+      </div>
+
+      <div class="help-item">
+        <i class="fa-solid fa-envelope"></i>
+        <div>
+          <h5>Contact Support</h5>
+          <p>Reach us at <strong>support@naijasmartroad.ai</strong> for technical issues or feedback.</p>
+        </div>
+      </div>
+
+      <div class="help-item">
+        <i class="fa-solid fa-shield-halved"></i>
+        <div>
+          <h5>Data & Privacy</h5>
+          <p>We don’t collect personal data — your inputs are processed locally for route optimization and policy simulation only.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chatbot -->
+  <div id="chatbot">
+    <div id="chatbot-header">
+      <span><i class="fa-solid fa-robot"></i> NaijaSmartBot</span>
+      <button id="close-chat" style="background:none;border:none;color:white;">✖</button>
+    </div>
+    <div id="chatbot-body">
+      <p><strong>Bot:</strong> Hi 👋 Need help navigating NaijaSmartRoad AI?</p>
+    </div>
+    <div id="chatbot-input">
+      <input type="text" id="user-input" placeholder="Type your question...">
+      <button id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <button id="chatbot-toggle"><i class="fa-solid fa-comments"></i></button>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const chatbot = document.getElementById('chatbot');
+      const toggle = document.getElementById('chatbot-toggle');
+      const closeBtn = document.getElementById('close-chat');
+      const body = document.getElementById('chatbot-body');
+      const input = document.getElementById('user-input');
+      const sendBtn = document.getElementById('send-btn');
+
+      toggle.addEventListener('click', () => chatbot.style.display = 'flex');
+      closeBtn.addEventListener('click', () => chatbot.style.display = 'none');
+
+      function addUser(msg) {
+        body.innerHTML += `<p><strong>You:</strong> ${msg}</p>`;
+        body.scrollTop = body.scrollHeight;
+      }
+      function addBot(msg) {
+        body.innerHTML += `<p><strong>Bot:</strong> ${msg}</p>`;
+        body.scrollTop = body.scrollHeight;
+      }
+
+      function getBotReply(msg) {
+        const m = msg.toLowerCase();
+        if (m.includes("traffic")) return "You can check live traffic from the Dashboard 🚦";
+        if (m.includes("help")) return "Scroll up for detailed Help topics!";
+        if (m.includes("contact")) return "Reach us at support@naijasmartroad.ai 📧";
+        if (m.includes("dashboard")) return "Click Dashboard on top to view real-time data 📊";
+        return "I'm your assistant! Try asking about traffic, help, or dashboard.";
+      }
+
+      function sendMessage() {
+        const msg = input.value.trim();
+        if (!msg) return;
+        addUser(msg);
+        input.value = "";
+        setTimeout(() => addBot(getBotReply(msg)), 600);
+      }
+
+      sendBtn.addEventListener("click", sendMessage);
+      input.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
+    });
+  </script>
+</body>
+</html>

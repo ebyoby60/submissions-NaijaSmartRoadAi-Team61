@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NaijaSmartRoad AI - Dashboard</title>
+
+  <!-- Bootstrap & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      background: url("{{ url_for('static', filename='dashboard.png') }}") no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Poppins', sans-serif;
+      color: #fff;
+      margin: 0;
+    }
+
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.8);
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    .nav-buttons {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+
+    .nav-buttons a {
+      color: #fff;
+      margin: 0 12px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .nav-buttons a:hover {
+      text-decoration: underline;
+    }
+
+    h1 {
+      text-align: center;
+      color: #00bfff;
+      margin-bottom: 30px;
+    }
+
+    .dashboard-container {
+      max-width: 1150px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      color: #000;
+      padding: 30px;
+      box-shadow: 0px 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .form-select, .form-control {
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 15px;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      border: none;
+      border-radius: 10px;
+      width: 100%;
+      padding: 10px;
+      font-size: 1.1rem;
+    }
+
+    .results-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: 30px;
+    }
+
+    .result-card {
+      flex: 1;
+      background: #f8f9fa;
+      color: #000;
+      border-radius: 10px;
+      padding: 20px;
+      margin-right: 20px;
+      min-width: 320px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: none;
+    }
+
+    .card-high { border-left: 8px solid #ff3333; }
+    .card-medium { border-left: 8px solid #ffcc00; }
+    .card-low { border-left: 8px solid #00cc66; }
+
+    #map-display {
+      flex: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      max-width: 500px;
+    }
+
+    #map-display iframe {
+      width: 100%;
+      height: 380px;
+      border: 0;
+      border-radius: 10px;
+    }
+
+    /* Chatbot */
+    #chatbot {
+      position: fixed;
+      bottom: 20px;
+      right: 25px;
+      background: #fff;
+      border-radius: 15px;
+      width: 320px;
+      height: 420px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 999;
+    }
+
+    #chatbot-header {
+      background-color: #007bff;
+      color: white;
+      padding: 10px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #chatbot-body {
+      flex: 1;
+      background: #f8f9fa;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 0.95rem;
+      color: #000;
+    }
+
+    #chatbot-input {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+
+    #chatbot-input input {
+      flex: 1;
+      border: none;
+      padding: 10px;
+      outline: none;
+    }
+
+    #chatbot-input button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+    }
+
+    #chatbot-toggle {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 1.7rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      cursor: pointer;
+      z-index: 998;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="nav-buttons">
+    <a href="{{ url_for('home') }}"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="{{ url_for('help') }}"><i class="fa-solid fa-circle-question"></i> Help</a>
+    <a href="{{ url_for('contact') }}"><i class="fa-solid fa-envelope"></i> Contact</a>
+  </div>
+
+  <div class="overlay">
+    <h1><i class="fa-solid fa-gauge-high"></i> NaijaSmartRoad AI Dashboard</h1>
+
+    <div class="dashboard-container">
+      <form id="predict-form">
+        <div class="row">
+          <div class="col-md-6">
+            <label>Route</label>
+            <select class="form-select" id="route" required>
+              {% for r in routes %}
+                <option value="{{ r }}">{{ r }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label>Time of Day</label>
+            <select class="form-select" id="time_of_day" required>
+              {% for t in times %}
+                <option value="{{ t }}">{{ t }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label>Day Type</label>
+            <select class="form-select" id="day_type" required>
+              {% for d in days %}
+                <option value="{{ d }}">{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label>Vehicle Type</label>
+            <select class="form-select" id="vehicle_type">
+              <option value="Normal">Normal</option>
+              <option value="Emergency">Emergency</option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label>Distance (km)</label>
+            <input type="number" id="distance" class="form-control" placeholder="e.g. 15" required>
+          </div>
+
+          <div class="col-md-6">
+            <label>Average Speed (km/h)</label>
+            <input type="number" id="avg_speed" class="form-control" placeholder="e.g. 40" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3"><i class="fa-solid fa-car-side"></i> Get Smart Routing</button>
+      </form>
+
+      <div class="results-container">
+        <div id="results" class="result-card">
+          <h5><i class="fa-solid fa-traffic-light"></i> Congestion Prediction</h5>
+          <p><strong>Now:</strong> <span id="now"></span></p>
+          <p><strong>Future:</strong> <span id="future"></span></p>
+
+          <h5 class="mt-3"><i class="fa-solid fa-route"></i> Recommended Route</h5>
+          <p><strong>Name:</strong> <span id="best_route"></span></p>
+          <p><strong>Distance:</strong> <span id="best_distance"></span> km</p>
+          <p><strong>Estimated Time:</strong> <span id="best_time"></span> mins</p>
+          <p><strong>Congestion Level:</strong> <span id="best_congestion"></span></p>
+          <canvas id="chart" height="90"></canvas>
+        </div>
+
+        <div id="map-display">
+          <iframe id="route-map" src="https://www.google.com/maps/embed/v1/directions?key=AIzaSyA-vEXAMPLEKEY&q=Lekki+to+Ajah" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chatbot -->
+  <div id="chatbot">
+    <div id="chatbot-header">
+      <span><i class="fa-solid fa-robot"></i> NaijaSmartBot</span>
+      <button id="close-chat" style="background:none;border:none;color:white;">✖</button>
+    </div>
+    <div id="chatbot-body">
+      <p><strong>Bot:</strong> 👋 Hi! I can help you understand smart routing results.</p>
+    </div>
+    <div id="chatbot-input">
+      <input type="text" id="user-input" placeholder="Ask about routes or congestion...">
+      <button id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <button id="chatbot-toggle"><i class="fa-solid fa-comments"></i></button>
+
+  <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.getElementById("predict-form").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const data = {
+        route: document.getElementById("route").value,
+        time_of_day: document.getElementById("time_of_day").value,
+        day_type: document.getElementById("day_type").value,
+        distance: parseFloat(document.getElementById("distance").value),
+        avg_speed: parseFloat(document.getElementById("avg_speed").value),
+        vehicle_type: document.getElementById("vehicle_type").value
+      };
+
+      const response = await fetch("/api/predict", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+
+      const now = result.now;
+      const card = document.getElementById("results");
+      card.style.display = "block";
+
+      const levelClass = now === "High" ? "card-high" : now === "Medium" ? "card-medium" : "card-low";
+      card.className = `result-card ${levelClass}`;
+
+      document.getElementById("now").innerText = now;
+      document.getElementById("future").innerText = result.future;
+      document.getElementById("best_route").innerText = result.recommended.route_name;
+      document.getElementById("best_distance").innerText = result.recommended.distance_km;
+      document.getElementById("best_time").innerText = result.recommended.est_time_mins;
+      document.getElementById("best_congestion").innerText = result.recommended.congestion;
+
+      const ctx1 = document.getElementById('chart').getContext('2d');
+      new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['Now', 'Future'],
+          datasets: [{
+            label: 'Congestion Level',
+            data: [
+              result.now === 'High' ? 3 : result.now === 'Medium' ? 2 : 1,
+              result.future === 'High' ? 3 : result.future === 'Medium' ? 2 : 1
+            ],
+            backgroundColor: ['#ff4d4d', '#007bff']
+          }]
+        },
+        options: { scales: { y: { beginAtZero: true, max: 3 } } }
+      });
+
+      // Fuel and CO₂ Chart
+      const fuelCost = result.recommended.fuel_cost || ((data.distance / 12) * 650);
+      const co2Emission = result.recommended.co2 || ((data.distance / 12) * 2.3);
+
+      const chartContainer = document.createElement('canvas');
+      chartContainer.id = 'chart-fuel';
+      chartContainer.height = 90;
+      card.appendChild(chartContainer);
+
+      const ctx2 = chartContainer.getContext('2d');
+      new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: ['Fuel Cost (₦)', 'CO₂ (kg)'],
+          datasets: [{
+            data: [fuelCost, co2Emission],
+            backgroundColor: ['#ff9933', '#33cc33']
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      const route = data.route.replace(/\s+/g, '+');
+      const iframe = document.getElementById("route-map");
+      iframe.src = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyA-vEXAMPLEKEY&q=${route}`;
+    });
+
+    // Chatbot logic
+    document.addEventListener("DOMContentLoaded", () => {
+      const chatbot = document.getElementById('chatbot');
+      const toggle = document.getElementById('chatbot-toggle');
+      const closeBtn = document.getElementById('close-chat');
+      const body = document.getElementById('chatbot-body');
+      const input = document.getElementById('user-input');
+      const sendBtn = document.getElementById('send-btn');
+
+      toggle.addEventListener('click', () => chatbot.style.display = 'flex');
+      closeBtn.addEventListener('click', () => chatbot.style.display = 'none');
+
+      function addUser(msg) { body.innerHTML += `<p><strong>You:</strong> ${msg}</p>`; body.scrollTop = body.scrollHeight; }
+      function addBot(msg) { body.innerHTML += `<p><strong>Bot:</strong> ${msg}</p>`; body.scrollTop = body.scrollHeight; }
+
+      function getBotReply(msg) {
+        const m = msg.toLowerCase();
+        if (m.includes("fuel")) return "Fuel cost is estimated using ₦650/litre and 12km per litre efficiency.";
+        if (m.includes("co2")) return "CO₂ emissions are computed using 2.3 kg per litre of fuel.";
+        if (m.includes("route")) return "Smart routing minimizes congestion and CO₂ impact 🌍";
+        if (m.includes("traffic")) return "Traffic prediction is powered by AI trained on Nigerian road data 🚗";
+        return "I can help you with fuel cost, CO₂ data, or routing info.";
+      }
+
+      function sendMessage() {
+        const msg = input.value.trim();
+        if (!msg) return;
+        addUser(msg);
+        input.value = "";
+        setTimeout(() => addBot(getBotReply(msg)), 600);
+      }
+
+      sendBtn.addEventListener("click", sendMessage);
+      input.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
+    });
+  </script>
+</body>
+</html>
